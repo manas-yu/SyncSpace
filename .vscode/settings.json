@@ -2,5 +2,6 @@
     "cSpell.words": [
         "dodoc"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "D:/code/flutter/dodoc/windows/flutter"
 }
