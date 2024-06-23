@@ -16,6 +16,42 @@ final documentRepositoryProvider = Provider(
 class DocumentRepository {
   final Client _client;
   DocumentRepository({required Client client}) : _client = client;
+
+  Future<ErrorModel> getDocuments(String token) async {
+    ErrorModel errorModel =
+        ErrorModel(errorMessage: "Something went wrong", data: null);
+    try {
+      final res = await _client.get(
+        Uri.parse("$host/doc/me"),
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "x-auth-token": token
+        },
+      );
+      switch (res.statusCode) {
+        case 200:
+          List<DocumentModel> documents = [];
+          for (int i = 0; i < jsonDecode(res.body).length; i++) {
+            documents.add(
+              DocumentModel.fromJson(
+                jsonEncode(jsonDecode(res.body)[i]),
+              ),
+            );
+          }
+
+          errorModel = ErrorModel(errorMessage: null, data: documents);
+          break;
+        default:
+          errorModel =
+              ErrorModel(errorMessage: "Something went wrong", data: null);
+          break;
+      }
+    } catch (e) {
+      errorModel = ErrorModel(errorMessage: e.toString(), data: null);
+    }
+    return errorModel;
+  }
+
   Future<ErrorModel> createDocument(String token) async {
     ErrorModel errorModel =
         ErrorModel(errorMessage: "Something went wrong", data: null);
