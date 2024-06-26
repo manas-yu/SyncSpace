@@ -1,5 +1,11 @@
 import 'package:dodoc/colors.dart';
+import 'package:dodoc/models/document_model.dart';
+import 'package:dodoc/models/error_model.dart';
+import 'package:dodoc/repository/auth_repository.dart';
+import 'package:dodoc/repository/document_repository.dart';
+import 'package:dodoc/repository/socket_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:routemaster/routemaster.dart';
 
@@ -12,12 +18,69 @@ class DocumentScreen extends ConsumerStatefulWidget {
 }
 
 class _DocumentScreenState extends ConsumerState<DocumentScreen> {
+  ErrorModel? errorModel;
+  SocketRepository socketRepository = SocketRepository();
   TextEditingController titleController =
       TextEditingController(text: 'Untitled Document');
+  final quill.QuillController _controller = quill.QuillController.basic();
+
+  void updateTitle(WidgetRef ref, BuildContext context, String title) async {
+    final token = ref.watch(userProvider)!.token;
+    final sMessenger = ScaffoldMessenger.of(context);
+    final ErrorModel titleErrorModel =
+        await ref.read(documentRepositoryProvider).updateTitle(
+              token: token,
+              id: widget.id,
+              title: title,
+            );
+    if (titleErrorModel.data != null) {
+      sMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Title updated successfully'),
+        ),
+      );
+    } else {
+      sMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Failed to update title'),
+        ),
+      );
+    }
+  }
+
+  void fetchDocumentData() async {
+    final token = ref.watch(userProvider)!.token;
+    final sMessenger = ScaffoldMessenger.of(context);
+    errorModel = await ref.read(documentRepositoryProvider).getDocumentById(
+          token,
+          widget.id,
+        );
+    if (errorModel!.data != null) {
+      DocumentModel document = errorModel!.data as DocumentModel;
+      titleController.text = document.title;
+      setState(() {});
+    } else {
+      sMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Failed to fetch document data'),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     titleController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    socketRepository.joinRoom(widget.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchDocumentData();
+    });
   }
 
   @override
@@ -73,7 +136,9 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
                       ),
                       contentPadding: EdgeInsets.only(left: 10),
                       hintText: 'Document Title'),
-                  onSubmitted: (value) => titleController.text = value,
+                  onSubmitted: (value) {
+                    updateTitle(ref, context, value);
+                  },
                 ),
               ),
             ],
@@ -92,7 +157,45 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         ),
       ),
       body: Center(
-        child: Text('Document Screen ${widget.id}'),
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 10,
+            ),
+            quill.QuillToolbar.simple(
+              configurations: quill.QuillSimpleToolbarConfigurations(
+                controller: _controller,
+                sharedConfigurations: const quill.QuillSharedConfigurations(
+                  locale: Locale('de'),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Expanded(
+              child: SizedBox(
+                width: 750,
+                child: Card(
+                  elevation: 5,
+                  color: kWhiteColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(30),
+                    child: quill.QuillEditor.basic(
+                      configurations: quill.QuillEditorConfigurations(
+                        controller: _controller,
+                        sharedConfigurations:
+                            const quill.QuillSharedConfigurations(
+                          locale: Locale('de'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

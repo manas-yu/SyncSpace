@@ -52,6 +52,38 @@ class DocumentRepository {
     return errorModel;
   }
 
+  Future<ErrorModel> getDocumentById(String token, String id) async {
+    ErrorModel error = ErrorModel(
+      errorMessage: 'Some unexpected error occurred.',
+      data: null,
+    );
+    try {
+      var res = await _client.get(
+        Uri.parse('$host/doc/$id'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'x-auth-token': token,
+        },
+      );
+      switch (res.statusCode) {
+        case 200:
+          error = ErrorModel(
+            errorMessage: null,
+            data: DocumentModel.fromJson(res.body),
+          );
+          break;
+        default:
+          throw 'This Document does not exist, please create a new one.';
+      }
+    } catch (e) {
+      error = ErrorModel(
+        errorMessage: e.toString(),
+        data: null,
+      );
+    }
+    return error;
+  }
+
   Future<ErrorModel> createDocument(String token) async {
     ErrorModel errorModel =
         ErrorModel(errorMessage: "Something went wrong", data: null);
@@ -65,6 +97,43 @@ class DocumentRepository {
         body: jsonEncode(
           {
             "createdAt": DateTime.now().millisecondsSinceEpoch,
+          },
+        ),
+      );
+      switch (res.statusCode) {
+        case 200:
+          errorModel = ErrorModel(
+              errorMessage: null, data: DocumentModel.fromJson(res.body));
+          break;
+        default:
+          errorModel =
+              ErrorModel(errorMessage: "Something went wrong", data: null);
+          break;
+      }
+    } catch (e) {
+      errorModel = ErrorModel(errorMessage: e.toString(), data: null);
+    }
+    return errorModel;
+  }
+
+  Future<ErrorModel> updateTitle({
+    required token,
+    required String id,
+    required String title,
+  }) async {
+    ErrorModel errorModel =
+        ErrorModel(errorMessage: "Something went wrong", data: null);
+    try {
+      final res = await _client.post(
+        Uri.parse("$host/doc/title"),
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "x-auth-token": token
+        },
+        body: jsonEncode(
+          {
+            "id": id,
+            "title": title,
           },
         ),
       );
