@@ -15,4 +15,8 @@ class SocketRepository {
   void changeListener(Function(Map<String, dynamic>) listener) {
     _socketClient.on('changes', (data) => listener(data));
   }
+
+  void autoSave(Map<String, dynamic> data) {
+    _socketClient.emit('autosave', data);
+  }
 }

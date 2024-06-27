@@ -5,6 +5,7 @@ const port = process.env.PORT || 3001;
 const mongoose = require('mongoose');
 const authRouter = require('./routes/auth');
 const documentRouter = require('./routes/document');
+const Document = require('./models/document');
 const http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io')(server);
@@ -24,8 +25,17 @@ io.on('connection', (socket) => {
     });
     socket.on('typing', (data) => {
         socket.broadcast.to(data.room).emit('changes', data);
-    })
+    });
+    socket.on('autosave', (data) => {
+        autoSave(data)
+    });
+
 });
+const autoSave = async (data) => {
+    let document = await Document.findById(data.room);
+    document.content = data.delta;
+    document = await document.save();
+};
 server.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port ${port}`);
     console.log(`http://localhost:${port}`);

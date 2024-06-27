@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dodoc/colors.dart';
 import 'package:dodoc/common/widgets/loader.dart';
 import 'package:dodoc/models/document_model.dart';
@@ -6,6 +8,7 @@ import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/document_repository.dart';
 import 'package:dodoc/repository/socket_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,12 +95,20 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
     socketRepository.joinRoom(widget.id);
     fetchDocumentData();
 
-    socketRepository.changeListener((data) {
-      _controller?.compose(
-        Delta.fromJson(data['delta']),
-        _controller?.selection ?? const TextSelection.collapsed(offset: 0),
-        quill.ChangeSource.remote,
-      );
+    socketRepository.changeListener(
+      (data) {
+        _controller?.compose(
+          Delta.fromJson(data['delta']),
+          _controller?.selection ?? const TextSelection.collapsed(offset: 0),
+          quill.ChangeSource.remote,
+        );
+      },
+    );
+    Timer.periodic(const Duration(seconds: 2), (timer) {
+      socketRepository.autoSave(<String, dynamic>{
+        'delta': _controller!.document.toDelta(),
+        'room': widget.id,
+      });
     });
   }
 
@@ -112,7 +123,19 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Clipboard.setData(
+                  ClipboardData(
+                    text: "http://localhost:3000/#/document/${widget.id}",
+                  ),
+                ).then((value) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Link copied to clipboard'),
+                    ),
+                  );
+                });
+              },
               icon: const Icon(
                 Icons.lock,
                 size: 16,
