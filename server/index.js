@@ -22,6 +22,9 @@ io.on('connection', (socket) => {
         socket.join(documentId);
         console.log('a user joined room: ' + documentId);
     });
+    socket.on('typing', (data) => {
+        socket.broadcast.to(data.room).emit('changes', data);
+    })
 });
 server.listen(port, "0.0.0.0", () => {
     console.log(`Server is running on port ${port}`);

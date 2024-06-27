@@ -29,6 +29,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   cupertino_icons: ^1.0.6
+  dart_quill_delta: ^9.4.6
   flutter:
     sdk: flutter
   flutter_quill: ^9.4.6
