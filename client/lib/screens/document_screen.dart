@@ -116,6 +116,11 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   Widget build(BuildContext context) {
     if (_controller == null) return const Scaffold(body: Loader());
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: kBlueColor,
+        child: const Icon(Icons.chat),
+      ),
       appBar: AppBar(
         backgroundColor: kWhiteColor,
         elevation: 0,
