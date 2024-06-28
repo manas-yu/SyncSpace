@@ -44,3 +44,4 @@ app.*.map.json
 
 //server
 /server/node_modules
+/.vscode

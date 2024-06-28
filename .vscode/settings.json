@@ -4,5 +4,5 @@
         "Routemaster"
     ],
     "java.configuration.updateBuildConfiguration": "interactive",
-    "cmake.sourceDirectory": "D:/code/flutter/dodoc/windows/flutter"
+    "cmake.sourceDirectory": "D:/code/flutter/dodoc/client/windows/flutter"
 }
