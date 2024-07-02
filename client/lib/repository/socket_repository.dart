@@ -21,4 +21,14 @@ class SocketRepository {
   void changeListener(Function(Map<String, dynamic>) func) {
     _socketClient.on('changes', (data) => func(data));
   }
+
+  void sendMessages(Map<String, dynamic> data) {
+    _socketClient.emit('send-message', data);
+  }
+
+  void receiveMessageListener(Function(Map<String, dynamic>) func) {
+    _socketClient.on('receive-message', (data) {
+      func(data);
+    });
+  }
 }

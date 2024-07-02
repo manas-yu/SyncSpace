@@ -5,6 +5,7 @@ const cors = require("cors");
 const http = require("http");
 const authRouter = require("./routes/auth");
 const documentRouter = require("./routes/document");
+const chatRouter = require("./routes/chat");
 const Document = require("./models/document");
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(authRouter);
 app.use(documentRouter);
-
+app.use(chatRouter);
 
 mongoose
     .connect(process.env.DB)
@@ -40,6 +41,9 @@ io.on("connection", (socket) => {
     socket.on("autosave", (data) => {
         saveData(data);
     });
+    socket.on('send-message', (data) => {
+        io.to(data.room).emit('receive-message', data);
+    })
 });
 
 const saveData = async (data) => {

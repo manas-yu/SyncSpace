@@ -7,6 +7,8 @@ import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/document_repository.dart';
 import 'package:dodoc/repository/socket_repository.dart';
+import 'package:dodoc/screens/chat_screen.dart';
+import 'package:dodoc/widgets/chat_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -27,6 +29,7 @@ class DocumentScreen extends ConsumerStatefulWidget {
 }
 
 class _DocumentScreenState extends ConsumerState<DocumentScreen> {
+  var chatVisible = false;
   TextEditingController titleController =
       TextEditingController(text: 'Untitled Document');
   quill.QuillController? _controller;
@@ -37,6 +40,7 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   void initState() {
     super.initState();
     socketRepository.joinRoom(widget.id);
+    print('Joining room ${widget.id} ');
     fetchDocumentData();
 
     socketRepository.changeListener((data) {
@@ -101,10 +105,22 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     if (_controller == null) {
       return const Scaffold(body: Loader());
     }
     return Scaffold(
+      floatingActionButton: !chatVisible
+          ? FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  chatVisible = !chatVisible;
+                });
+              },
+              child: const Icon(Icons.chat_bubble),
+            )
+          : null,
       appBar: AppBar(
         backgroundColor: kWhiteColor,
         elevation: 0,
@@ -130,8 +146,12 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
               icon: const Icon(
                 Icons.lock,
                 size: 16,
+                color: kWhiteColor,
               ),
-              label: const Text('Share'),
+              label: const Text(
+                'Share',
+                style: TextStyle(color: kWhiteColor),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: kBlueColor,
               ),
@@ -183,41 +203,63 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            quill.QuillToolbar.simple(
-              configurations: QuillSimpleToolbarConfigurations(
-                controller: _controller!,
-                sharedConfigurations: const QuillSharedConfigurations(
-                  locale: Locale('de'),
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                quill.QuillToolbar.simple(
+                  configurations: QuillSimpleToolbarConfigurations(
+                    controller: _controller!,
+                    sharedConfigurations: const QuillSharedConfigurations(
+                      locale: Locale('en'),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: SizedBox(
-                width: 750,
-                child: Card(
-                  color: kWhiteColor,
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30.0),
-                    child: quill.QuillEditor.basic(
-                      configurations: QuillEditorConfigurations(
-                        controller: _controller!,
-                        sharedConfigurations: const QuillSharedConfigurations(
-                          locale: Locale('de'),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: SizedBox(
+                    width: screenWidth * 0.6,
+                    child: Card(
+                      color: kWhiteColor,
+                      elevation: 5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(30.0),
+                        child: quill.QuillEditor.basic(
+                          configurations: QuillEditorConfigurations(
+                            controller: _controller!,
+                            sharedConfigurations:
+                                const QuillSharedConfigurations(
+                              locale: Locale('en'),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                )
+              ],
+            ),
+          ),
+          if (chatVisible)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.all(13),
+                width: screenWidth * 0.5,
+                height: screenHeight * 0.8,
+                child: ChatScreen(
+                    id: widget.id,
+                    closeChat: () {
+                      setState(() {
+                        chatVisible = false;
+                      });
+                    }),
               ),
-            )
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

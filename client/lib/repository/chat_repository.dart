@@ -38,7 +38,6 @@ class ChatRepository {
               ),
             );
           }
-
           errorModel = ErrorModel(errorMessage: null, data: chats);
           break;
         default:

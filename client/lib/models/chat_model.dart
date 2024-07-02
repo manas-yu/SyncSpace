@@ -21,7 +21,7 @@ class ChatModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'id': id,
+      '_id': id,
       'username': username,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'content': content,
@@ -33,7 +33,7 @@ class ChatModel {
 
   factory ChatModel.fromMap(Map<String, dynamic> map) {
     return ChatModel(
-      id: map['id'] as String,
+      id: map['_id'] as String,
       username: map['username'] as String,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       content: map['content'] as String,
