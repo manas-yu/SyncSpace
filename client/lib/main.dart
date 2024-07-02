@@ -21,7 +21,6 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    print("User Data");
     getUserData();
   }
 
@@ -29,8 +28,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     errorModel = await ref.read(authRepositoryProvider).getUserData();
     if (errorModel != null && errorModel!.data != null) {
       ref.read(userProvider.notifier).update((state) => errorModel!.data);
-      print("User Data");
-      print(errorModel!.data!.name);
     }
   }
 

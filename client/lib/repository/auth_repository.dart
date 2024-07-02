@@ -63,6 +63,7 @@ class AuthRepository {
             );
             errorModel = ErrorModel(errorMessage: null, data: newUser);
             _localStorageRepository.saveToken(newUser.token);
+            print(newUser.token);
             break;
           case 500:
             print("ServerSide Error");
@@ -86,7 +87,7 @@ class AuthRepository {
     );
     try {
       String? token = await _localStorageRepository.getToken();
-
+      print(token);
       if (token != null) {
         var res = await _client.get(Uri.parse('$host/'), headers: {
           'Content-Type': 'application/json; charset=UTF-8',
