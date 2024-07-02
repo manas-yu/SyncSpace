@@ -1,3 +1,4 @@
 .vscode/
 /client/build
 /client/lib/constants.dart
+/client/build
