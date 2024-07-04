@@ -55,11 +55,14 @@ class _FileScreenState extends ConsumerState<FileScreen> {
               ),
             ]),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.file_upload),
-                onPressed: () {
-                  // Add your onPressed code here!
-                },
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(Icons.file_upload),
+                  onPressed: () {
+                    // Add your onPressed code here!
+                  },
+                ),
               ),
             ],
           ),
