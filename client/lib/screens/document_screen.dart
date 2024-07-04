@@ -8,7 +8,6 @@ import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/document_repository.dart';
 import 'package:dodoc/repository/socket_repository.dart';
 import 'package:dodoc/screens/chat_screen.dart';
-import 'package:dodoc/widgets/chat_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
