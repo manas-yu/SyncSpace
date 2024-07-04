@@ -102,6 +102,10 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         );
   }
 
+  void navigateToFileSharing(BuildContext context, String roomId) {
+    Routemaster.of(context).push('/files/$roomId');
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -124,6 +128,12 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         backgroundColor: kWhiteColor,
         elevation: 0,
         actions: [
+          IconButton(
+            onPressed: () {
+              navigateToFileSharing(context, widget.id);
+            },
+            icon: const Icon(Icons.folder),
+          ),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: ElevatedButton.icon(

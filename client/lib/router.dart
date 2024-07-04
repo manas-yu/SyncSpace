@@ -1,4 +1,5 @@
 import 'package:dodoc/screens/document_screen.dart';
+import 'package:dodoc/screens/files_screen.dart';
 import 'package:dodoc/screens/home_screen.dart';
 import 'package:dodoc/screens/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,10 @@ final loggedInRoutes = RouteMap(
     '/document/:id': (route) {
       final id = route.pathParameters['id'] ?? ' ';
       return MaterialPage(child: DocumentScreen(id: id));
+    },
+    '/files/:roomId': (route) {
+      final roomId = route.pathParameters['roomId'] ?? ' ';
+      return MaterialPage(child: FileScreen(roomId: roomId));
     },
   },
 );

@@ -4,8 +4,14 @@ const File = require('../models/file');
 const auth = require('../middleware/auth');
 
 const fs = require('fs');
-const path = require('path');
 const multer = require('multer');
+const { join } = require('path');
+
+// Ensure the uploads directory exists
+const uploadsDir = join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -20,9 +26,6 @@ const upload = multer({ storage: storage });
 
 fileRouter.post('/file/upload', auth, upload.single('file'), async (req, res) => {
     try {
-        if (!fs.existsSync('uploads')) {
-            fs.mkdirSync('uploads');
-        }
 
         const { createdAt, roomId } = req.body;
         let file = new File({
@@ -41,13 +44,16 @@ fileRouter.post('/file/upload', auth, upload.single('file'), async (req, res) =>
 
 
     } catch (e) {
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({ error: e.message })
     }
 
 });
 
 
-fileRouter.get('/file/download/:filename', async (req, res) => {
+fileRouter.get('/file/download/:filename', auth, async (req, res) => {
     const filename = req.params.filename;
 
     try {
@@ -62,7 +68,7 @@ fileRouter.get('/file/download/:filename', async (req, res) => {
     }
 });
 
-fileRouter.get('/file/:roomId', async (req, res) => {
+fileRouter.get('/file/:roomId', auth, async (req, res) => {
     try {
         const files = await File.find({ roomId: req.params.roomId });
         res.json(files);
