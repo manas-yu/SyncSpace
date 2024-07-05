@@ -1,11 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:open_file/open_file.dart';
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 import 'package:dodoc/constants.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'dart:html' as html;
+import 'dart:typed_data';
 import '../models/error_model.dart';
 
 final filesRepositoryProvider = Provider(
@@ -93,6 +99,62 @@ class FilesRepository {
       }
     } catch (e) {
       errorModel = ErrorModel(errorMessage: e.toString(), data: null);
+    }
+    return errorModel;
+  }
+
+  Future<ErrorModel> downloadFile({
+    required String token,
+    required String filename,
+  }) async {
+    ErrorModel errorModel =
+        ErrorModel(errorMessage: "Something went wrong", data: null);
+    try {
+      var uri = Uri.parse("$host/file/download/$filename");
+      var request = Request('GET', uri)
+        ..headers.addAll({
+          "x-auth-token": token,
+        });
+
+      var streamedResponse = await request.send();
+      var response = await Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        var bytes = response.bodyBytes;
+
+        if (kIsWeb) {
+          final blob = html.Blob([bytes]);
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          html.AnchorElement(href: url)
+            ..setAttribute("download", filename)
+            ..click();
+          html.Url.revokeObjectUrl(url);
+          errorModel = ErrorModel(
+            errorMessage: null,
+            data: bytes,
+          );
+        } else {
+          var dir = await getApplicationDocumentsDirectory();
+          var filePath = path.join(dir.path, filename);
+          var file = File(filePath);
+          await file.writeAsBytes(bytes);
+          errorModel = ErrorModel(
+            errorMessage: null,
+            data: filePath,
+          );
+          OpenFile.open(filePath);
+        }
+      } else {
+        errorModel = ErrorModel(
+          errorMessage: "File not found",
+          data: null,
+        );
+      }
+    } catch (e) {
+      errorModel = ErrorModel(
+        errorMessage: e.toString(),
+        data: null,
+      );
     }
     return errorModel;
   }

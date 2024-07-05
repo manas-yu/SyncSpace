@@ -1,3 +1,4 @@
+import 'package:dodoc/common/widgets/loader.dart';
 import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
@@ -6,6 +7,7 @@ import 'package:dodoc/widgets/files_tab.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_file/open_file.dart';
 
 class FileScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -30,6 +32,7 @@ class _FileScreenState extends ConsumerState<FileScreen> {
   }
 
   void uploadFile() async {
+    final sMessenger = ScaffoldMessenger.of(context);
     final result = await FilePicker.platform.pickFiles(allowMultiple: false);
     if (result == null) return;
     final file = result.files.first;
@@ -39,15 +42,32 @@ class _FileScreenState extends ConsumerState<FileScreen> {
         roomId: widget.roomId,
         fileBytes: file.bytes!,
         fileName: file.name);
+    if (uploadErrorModel.errorMessage != null) {
+      sMessenger.showSnackBar(
+          SnackBar(content: Text(uploadErrorModel.errorMessage!)));
+    }
   }
 
   String getUserId() {
     return ref.read(userProvider)!.uid;
   }
 
-  void onOpenedFile(FileModel file) {
+  void onOpenedFile(FileModel file) async {
     // Open file
+    final sMessenger = ScaffoldMessenger.of(context);
+
+    final downloadErrorModel =
+        await ref.read(filesRepositoryProvider).downloadFile(
+              token: ref.read(userProvider)!.token,
+              filename: file.filename,
+            );
+
+    if (downloadErrorModel.errorMessage != null) {
+      sMessenger.showSnackBar(
+          SnackBar(content: Text(downloadErrorModel.errorMessage!)));
+    }
   }
+
   @override
   void initState() {
     super.initState();
@@ -82,16 +102,20 @@ class _FileScreenState extends ConsumerState<FileScreen> {
             ],
           ),
           body: TabBarView(children: [
-            FilesTab(
-                files: _loadedFiles
-                    .where((file) => getUserId() == file.uid)
-                    .toList(),
-                onOpenedFile: onOpenedFile),
-            FilesTab(
-                files: _loadedFiles
-                    .where((file) => getUserId() != file.uid)
-                    .toList(),
-                onOpenedFile: onOpenedFile),
+            errorModel == null
+                ? const Loader()
+                : FilesTab(
+                    files: _loadedFiles
+                        .where((file) => getUserId() == file.uid)
+                        .toList(),
+                    onOpenedFile: onOpenedFile),
+            errorModel == null
+                ? const Loader()
+                : FilesTab(
+                    files: _loadedFiles
+                        .where((file) => getUserId() != file.uid)
+                        .toList(),
+                    onOpenedFile: onOpenedFile),
           ]),
         ));
   }
