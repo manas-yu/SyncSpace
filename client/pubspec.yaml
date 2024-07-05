@@ -37,6 +37,8 @@ dependencies:
   flutter_riverpod: ^2.5.1
   google_sign_in: ^6.2.1
   http: ^1.2.1
+  http_parser: ^4.0.0
+  mime: ^1.0.5
   open_file: ^3.3.2
   routemaster: ^1.0.1
   shared_preferences: ^2.2.3

@@ -2,6 +2,7 @@ import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/files_repository.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +26,18 @@ class _FileScreenState extends ConsumerState<FileScreen> {
         _loadedFiles.addAll(errorModel!.data as List<FileModel>);
       });
     }
+  }
+
+  void uploadFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result == null) return;
+    final file = result.files.first;
+    final uploadErrorModel = await ref.read(filesRepositoryProvider).uploadFile(
+        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+        token: ref.read(userProvider)!.token,
+        roomId: widget.roomId,
+        fileBytes: file.bytes!,
+        fileName: file.name);
   }
 
   String getUserId() {
@@ -61,6 +74,7 @@ class _FileScreenState extends ConsumerState<FileScreen> {
                   icon: const Icon(Icons.file_upload),
                   onPressed: () {
                     // Add your onPressed code here!
+                    uploadFile();
                   },
                 ),
               ),
