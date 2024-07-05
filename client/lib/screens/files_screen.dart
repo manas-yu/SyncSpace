@@ -2,6 +2,7 @@ import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/files_repository.dart';
+import 'package:dodoc/widgets/files_tab.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +45,9 @@ class _FileScreenState extends ConsumerState<FileScreen> {
     return ref.read(userProvider)!.uid;
   }
 
+  void onOpenedFile(FileModel file) {
+    // Open file
+  }
   @override
   void initState() {
     super.initState();
@@ -72,27 +76,22 @@ class _FileScreenState extends ConsumerState<FileScreen> {
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton(
                   icon: const Icon(Icons.file_upload),
-                  onPressed: () {
-                    // Add your onPressed code here!
-                    uploadFile();
-                  },
+                  onPressed: uploadFile,
                 ),
               ),
             ],
           ),
           body: TabBarView(children: [
-            Container(
-              color: Colors.purple,
-              child: const Center(
-                child: Text('My Files'),
-              ),
-            ),
-            Container(
-              color: Colors.green,
-              child: const Center(
-                child: Text('Shared Files'),
-              ),
-            ),
+            FilesTab(
+                files: _loadedFiles
+                    .where((file) => getUserId() == file.uid)
+                    .toList(),
+                onOpenedFile: onOpenedFile),
+            FilesTab(
+                files: _loadedFiles
+                    .where((file) => getUserId() != file.uid)
+                    .toList(),
+                onOpenedFile: onOpenedFile),
           ]),
         ));
   }
