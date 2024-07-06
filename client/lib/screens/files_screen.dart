@@ -9,6 +9,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'dart:io';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:html' as html;
+import 'package:path/path.dart' as path;
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
+
 class FileScreen extends ConsumerStatefulWidget {
   final String roomId;
   const FileScreen({super.key, required this.roomId});
@@ -35,7 +42,6 @@ class _FileScreenState extends ConsumerState<FileScreen> {
       final response = (data['deletedFile'] as String);
       if (mounted) {
         setState(() {
-          print('deleting file ' + response);
           _loadedFiles.removeWhere((file) => file.filename == response);
         });
       }
@@ -96,8 +102,7 @@ class _FileScreenState extends ConsumerState<FileScreen> {
     return ref.read(userProvider)!.uid;
   }
 
-  void onOpenedFile(FileModel file) async {
-    // Open file
+  void onDownloadFile(FileModel file) async {
     final sMessenger = ScaffoldMessenger.of(context);
 
     final downloadErrorModel =
@@ -105,14 +110,58 @@ class _FileScreenState extends ConsumerState<FileScreen> {
               token: ref.read(userProvider)!.token,
               filename: file.filename,
             );
-
     if (downloadErrorModel.errorMessage != null) {
       sMessenger.showSnackBar(
           SnackBar(content: Text(downloadErrorModel.errorMessage!)));
+      return;
+    }
+    final Uint8List bytes = downloadErrorModel.data;
+    if (kIsWeb) {
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute("download", file.originalname)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      var dir = await getApplicationDocumentsDirectory();
+      var filePath = path.join(dir.path, file.filename);
+      var localFile = File(filePath);
+      await localFile.writeAsBytes(bytes);
     }
   }
 
-  void onDownloadFile(FileModel file) {}
+  void onOpenedFile(FileModel file) async {
+    // Open file
+    final sMessenger = ScaffoldMessenger.of(context);
+
+    final openFileErrorModel =
+        await ref.read(filesRepositoryProvider).downloadFile(
+              token: ref.read(userProvider)!.token,
+              filename: file.filename,
+            );
+    if (openFileErrorModel.errorMessage != null) {
+      sMessenger.showSnackBar(
+          SnackBar(content: Text(openFileErrorModel.errorMessage!)));
+      return;
+    }
+    final Uint8List bytes = openFileErrorModel.data;
+    if (kIsWeb) {
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute("download", file.originalname)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      var dir = await getApplicationCacheDirectory();
+      var filePath = path.join(dir.path, file.filename);
+      var cacheFile = File(filePath);
+      await cacheFile.writeAsBytes(bytes);
+      OpenFile.open(cacheFile.path);
+    }
+  }
+
   void onDeleteFile(FileModel file) async {
     final sMessenger = ScaffoldMessenger.of(context);
     final deleteErrorModel = await ref.read(filesRepositoryProvider).deleteFile(

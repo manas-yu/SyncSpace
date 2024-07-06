@@ -1,15 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:open_file/open_file.dart';
-import 'package:path/path.dart' as path;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dodoc/constants.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:html' as html;
 import '../models/error_model.dart';
 
 final filesRepositoryProvider = Provider(
@@ -148,29 +142,10 @@ class FilesRepository {
 
       if (response.statusCode == 200) {
         var bytes = response.bodyBytes;
-
-        if (kIsWeb) {
-          final blob = html.Blob([bytes]);
-          final url = html.Url.createObjectUrlFromBlob(blob);
-          html.AnchorElement(href: url)
-            ..setAttribute("download", filename)
-            ..click();
-          html.Url.revokeObjectUrl(url);
-          errorModel = ErrorModel(
-            errorMessage: null,
-            data: bytes,
-          );
-        } else {
-          var dir = await getApplicationDocumentsDirectory();
-          var filePath = path.join(dir.path, filename);
-          var file = File(filePath);
-          await file.writeAsBytes(bytes);
-          errorModel = ErrorModel(
-            errorMessage: null,
-            data: filePath,
-          );
-          OpenFile.open(filePath);
-        }
+        errorModel = ErrorModel(
+          errorMessage: null,
+          data: bytes,
+        );
       } else {
         errorModel = ErrorModel(
           errorMessage: "File not found",
