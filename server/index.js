@@ -44,8 +44,9 @@ io.on("connection", (socket) => {
   socket.on('send-message', (data) => {
     io.to(data.room).emit('receive-message', data);
   });
-  socket.on('file-uploaded', (data) => {
-    io.to(data.room).emit('file-received', data);
+  socket.on('share-file', (data) => {
+    console.log('file received' + data.room);
+    io.to(data.room).emit('receive-file', data);
   })
 });
 

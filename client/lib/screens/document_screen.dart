@@ -102,8 +102,8 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         );
   }
 
-  void navigateToFileSharing(BuildContext context, String roomId) {
-    Routemaster.of(context).push('/files/$roomId');
+  void navigateToFileSharing(BuildContext context) {
+    Routemaster.of(context).push('files');
   }
 
   @override
@@ -130,7 +130,7 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              navigateToFileSharing(context, widget.id);
+              navigateToFileSharing(context);
             },
             icon: const Icon(Icons.folder),
           ),

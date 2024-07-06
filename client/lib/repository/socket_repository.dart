@@ -31,4 +31,15 @@ class SocketRepository {
       func(data);
     });
   }
+
+  void shareFile(Map<String, dynamic> data) {
+    _socketClient.emit('share-file', data);
+  }
+
+  void receiveFileListener(Function(Map<String, dynamic>) func) {
+    _socketClient.on('receive-file', (data) {
+      print('file received on socket');
+      func(data);
+    });
+  }
 }

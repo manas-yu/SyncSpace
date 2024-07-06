@@ -21,8 +21,8 @@ final loggedInRoutes = RouteMap(
       final id = route.pathParameters['id'] ?? ' ';
       return MaterialPage(child: DocumentScreen(id: id));
     },
-    '/files/:roomId': (route) {
-      final roomId = route.pathParameters['roomId'] ?? ' ';
+    '/document/:id/files': (route) {
+      final roomId = route.pathParameters['id'] ?? ' ';
       return MaterialPage(child: FileScreen(roomId: roomId));
     },
   },

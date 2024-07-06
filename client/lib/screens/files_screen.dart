@@ -3,11 +3,11 @@ import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/files_repository.dart';
+import 'package:dodoc/repository/socket_repository.dart';
 import 'package:dodoc/widgets/files_tab.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:open_file/open_file.dart';
 
 class FileScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -18,15 +18,37 @@ class FileScreen extends ConsumerStatefulWidget {
 }
 
 class _FileScreenState extends ConsumerState<FileScreen> {
-  ErrorModel? errorModel;
+  SocketRepository socketRepository = SocketRepository();
+  ErrorModel? errorModelFetchingFiles;
+  var uploading = false;
   final List<FileModel> _loadedFiles = [];
-  void fetchFiles(String token, String roomId) async {
-    errorModel = await ref
+  void setFileListener() {
+    socketRepository.receiveFileListener((data) {
+      final file = FileModel.fromJson(data['sharedFile']);
+      if (mounted) {
+        setState(() {
+          _loadedFiles.add(file);
+        });
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchFiles();
+      setFileListener();
+    });
+  }
+
+  void fetchFiles() async {
+    errorModelFetchingFiles = await ref
         .read(filesRepositoryProvider)
-        .getFiles(token: token, id: roomId);
-    if (errorModel != null) {
+        .getFiles(token: ref.read(userProvider)!.token, id: widget.roomId);
+    if (errorModelFetchingFiles != null) {
       setState(() {
-        _loadedFiles.addAll(errorModel!.data as List<FileModel>);
+        _loadedFiles.addAll(errorModelFetchingFiles!.data as List<FileModel>);
       });
     }
   }
@@ -34,6 +56,9 @@ class _FileScreenState extends ConsumerState<FileScreen> {
   void uploadFile() async {
     final sMessenger = ScaffoldMessenger.of(context);
     final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    setState(() {
+      uploading = true;
+    });
     if (result == null) return;
     final file = result.files.first;
     final uploadErrorModel = await ref.read(filesRepositoryProvider).uploadFile(
@@ -45,7 +70,16 @@ class _FileScreenState extends ConsumerState<FileScreen> {
     if (uploadErrorModel.errorMessage != null) {
       sMessenger.showSnackBar(
           SnackBar(content: Text(uploadErrorModel.errorMessage!)));
+      return;
     }
+    socketRepository.shareFile({
+      'room': widget.roomId,
+      'sharedFile': (uploadErrorModel.data as FileModel).toJson()
+    });
+    setState(() {
+      uploading = false;
+    });
+    sMessenger.showSnackBar(const SnackBar(content: Text('File uploaded')));
   }
 
   String getUserId() {
@@ -69,12 +103,6 @@ class _FileScreenState extends ConsumerState<FileScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    fetchFiles(ref.read(userProvider)!.token, widget.roomId);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
         length: 2,
@@ -92,24 +120,26 @@ class _FileScreenState extends ConsumerState<FileScreen> {
               ),
             ]),
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(Icons.file_upload),
-                  onPressed: uploadFile,
-                ),
-              ),
+              uploading
+                  ? const Loader()
+                  : Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.file_upload),
+                        onPressed: uploadFile,
+                      ),
+                    ),
             ],
           ),
           body: TabBarView(children: [
-            errorModel == null
+            errorModelFetchingFiles == null
                 ? const Loader()
                 : FilesTab(
                     files: _loadedFiles
                         .where((file) => getUserId() == file.uid)
                         .toList(),
                     onOpenedFile: onOpenedFile),
-            errorModel == null
+            errorModelFetchingFiles == null
                 ? const Loader()
                 : FilesTab(
                     files: _loadedFiles
