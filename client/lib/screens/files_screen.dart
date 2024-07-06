@@ -31,6 +31,15 @@ class _FileScreenState extends ConsumerState<FileScreen> {
         });
       }
     });
+    socketRepository.fileDeletedListener((data) {
+      final response = (data['deletedFile'] as String);
+      if (mounted) {
+        setState(() {
+          print('deleting file ' + response);
+          _loadedFiles.removeWhere((file) => file.filename == response);
+        });
+      }
+    });
   }
 
   @override
@@ -49,6 +58,7 @@ class _FileScreenState extends ConsumerState<FileScreen> {
     if (errorModelFetchingFiles != null) {
       setState(() {
         _loadedFiles.addAll(errorModelFetchingFiles!.data as List<FileModel>);
+        _loadedFiles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       });
     }
   }
@@ -102,6 +112,27 @@ class _FileScreenState extends ConsumerState<FileScreen> {
     }
   }
 
+  void onDownloadFile(FileModel file) {}
+  void onDeleteFile(FileModel file) async {
+    final sMessenger = ScaffoldMessenger.of(context);
+    final deleteErrorModel = await ref.read(filesRepositoryProvider).deleteFile(
+          token: ref.read(userProvider)!.token,
+          filename: file.filename,
+        );
+    if (deleteErrorModel.errorMessage != null) {
+      sMessenger.showSnackBar(
+          SnackBar(content: Text(deleteErrorModel.errorMessage!)));
+      return;
+    } else {
+      socketRepository.deleteFile({
+        'room': widget.roomId,
+        'deletedFile': deleteErrorModel.data as String
+      });
+
+      sMessenger.showSnackBar(const SnackBar(content: Text('File deleted')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -138,14 +169,20 @@ class _FileScreenState extends ConsumerState<FileScreen> {
                     files: _loadedFiles
                         .where((file) => getUserId() == file.uid)
                         .toList(),
-                    onOpenedFile: onOpenedFile),
+                    onOpenedFile: onOpenedFile,
+                    onDeleteFile: onDeleteFile,
+                    onDownloadFile: onDownloadFile,
+                  ),
             errorModelFetchingFiles == null
                 ? const Loader()
                 : FilesTab(
                     files: _loadedFiles
                         .where((file) => getUserId() != file.uid)
                         .toList(),
-                    onOpenedFile: onOpenedFile),
+                    onOpenedFile: onOpenedFile,
+                    onDeleteFile: null,
+                    onDownloadFile: onDownloadFile,
+                  ),
           ]),
         ));
   }

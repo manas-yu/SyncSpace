@@ -27,10 +27,14 @@ class FilesTab extends StatelessWidget {
 
   final List<FileModel> files;
   final ValueChanged<FileModel> onOpenedFile;
+  final ValueChanged<FileModel>? onDeleteFile;
+  final ValueChanged<FileModel> onDownloadFile;
   const FilesTab({
     super.key,
     required this.files,
     required this.onOpenedFile,
+    this.onDeleteFile,
+    required this.onDownloadFile,
   });
 
   @override
@@ -49,11 +53,27 @@ class FilesTab extends StatelessWidget {
                 mainAxisSpacing: 8, crossAxisSpacing: 8, crossAxisCount: 3),
             itemBuilder: (context, index) {
               final file = files[index];
-              return buildFile(file);
+              return buildFile(file, context);
             });
   }
 
-  Widget buildFile(FileModel file) {
+  void onItemSelected(int item, BuildContext context, FileModel file) {
+    switch (item) {
+      case 0:
+        // Implement your download logic here
+        onDownloadFile(file);
+        break;
+      case 1:
+        // Implement your delete logic here
+        onDeleteFile!(file);
+        break;
+    }
+  }
+
+  Widget buildFile(
+    FileModel file,
+    BuildContext context,
+  ) {
     final kb = file.size / 1024;
     final mb = kb / 1024;
     final fileSize =
@@ -90,14 +110,50 @@ class FilesTab extends StatelessWidget {
             const SizedBox(
               height: 8,
             ),
-            Text(
-              file.filename,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              fileSize,
-              style: const TextStyle(fontSize: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      file.originalname,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      fileSize,
+                      style: const TextStyle(fontSize: 16),
+                    )
+                  ],
+                ),
+                PopupMenuButton<int>(
+                  onSelected: (item) => onItemSelected(item, context, file),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem<int>(
+                      value: 0,
+                      child: Row(
+                        children: [
+                          Icon(Icons.download),
+                          Text('Download'),
+                        ],
+                      ),
+                    ),
+                    if (onDeleteFile != null)
+                      const PopupMenuItem<int>(
+                        value: 1,
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete),
+                            Text('Delete'),
+                          ],
+                        ),
+                      ),
+                  ],
+                  icon: const Icon(Icons.more_vert),
+                )
+              ],
             )
           ],
         ),

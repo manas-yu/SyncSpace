@@ -4,14 +4,12 @@ import 'dart:typed_data';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
 import 'package:dodoc/constants.dart';
 import 'package:dodoc/models/file_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:html' as html;
-import 'dart:typed_data';
 import '../models/error_model.dart';
 
 final filesRepositoryProvider = Provider(
@@ -56,6 +54,35 @@ class FilesRepository {
           errorModel =
               ErrorModel(errorMessage: "Something went wrong", data: null);
           break;
+      }
+    } catch (e) {
+      errorModel = ErrorModel(errorMessage: e.toString(), data: null);
+    }
+    return errorModel;
+  }
+
+  Future<ErrorModel> deleteFile({
+    required String token,
+    required String filename,
+  }) async {
+    ErrorModel errorModel =
+        ErrorModel(errorMessage: "Something went wrong", data: null);
+    try {
+      var uri = Uri.parse("$host/file/delete/$filename");
+      var response = await delete(
+        uri,
+        headers: {
+          "x-auth-token": token,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Assuming success means the file was deleted
+        errorModel = ErrorModel(errorMessage: null, data: filename);
+      } else {
+        // Handle different status codes or use the response body to create a more specific error message
+        errorModel =
+            ErrorModel(errorMessage: "Failed to delete file", data: null);
       }
     } catch (e) {
       errorModel = ErrorModel(errorMessage: e.toString(), data: null);

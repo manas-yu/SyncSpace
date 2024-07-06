@@ -45,9 +45,14 @@ io.on("connection", (socket) => {
     io.to(data.room).emit('receive-message', data);
   });
   socket.on('share-file', (data) => {
-    console.log('file received' + data.room);
     io.to(data.room).emit('receive-file', data);
   })
+
+  socket.on('delete-file', (data) => {
+    console.log(data);
+    io.to(data.room).emit('file-deleted', data);
+  })
+
 });
 
 const saveData = async (data) => {

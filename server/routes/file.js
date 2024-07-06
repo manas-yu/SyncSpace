@@ -71,5 +71,25 @@ fileRouter.get('/file/:roomId', auth, async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+fileRouter.delete('/file/delete/:filename', auth, async (req, res) => {
+    const filename = req.params.filename;
 
+    try {
+        const file = await File.findOne({ filename }).exec();
+        if (!file) {
+            return res.status(404).send('File not found');
+        }
+
+        // Delete the file from the filesystem
+        fs.unlinkSync(file.path);
+
+        // Delete the file record from the database
+        await File.deleteOne({ filename });
+
+        res.send('File deleted successfully');
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+});
 module.exports = fileRouter;

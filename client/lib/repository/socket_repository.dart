@@ -42,4 +42,14 @@ class SocketRepository {
       func(data);
     });
   }
+
+  void deleteFile(Map<String, dynamic> data) {
+    _socketClient.emit('delete-file', data);
+  }
+
+  void fileDeletedListener(Function(Map<String, dynamic>) func) {
+    _socketClient.on('file-deleted', (data) {
+      func(data);
+    });
+  }
 }
