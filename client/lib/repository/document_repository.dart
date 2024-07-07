@@ -84,6 +84,37 @@ class DocumentRepository {
     return error;
   }
 
+  Future<ErrorModel> deleteDocument(String token, String documentId) async {
+    ErrorModel errorModel =
+        ErrorModel(errorMessage: "Something went wrong", data: null);
+    try {
+      final res = await _client.delete(
+        Uri.parse("$host/doc/$documentId"),
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "x-auth-token": token,
+        },
+      );
+      switch (res.statusCode) {
+        case 200:
+          errorModel = ErrorModel(
+              errorMessage: null, data: "Document deleted successfully");
+          break;
+        case 404:
+          errorModel =
+              ErrorModel(errorMessage: "Document not found", data: null);
+          break;
+        default:
+          errorModel =
+              ErrorModel(errorMessage: "Something went wrong", data: null);
+          break;
+      }
+    } catch (e) {
+      errorModel = ErrorModel(errorMessage: e.toString(), data: null);
+    }
+    return errorModel;
+  }
+
   Future<ErrorModel> createDocument(String token) async {
     ErrorModel errorModel =
         ErrorModel(errorMessage: "Something went wrong", data: null);

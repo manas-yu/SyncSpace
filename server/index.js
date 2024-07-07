@@ -57,8 +57,10 @@ io.on("connection", (socket) => {
 
 const saveData = async (data) => {
   let document = await Document.findById(data.room);
-  document.content = data.delta;
-  document = await document.save();
+  if (document != null) {
+    document.content = data.delta;
+    document = await document.save();
+  }
 };
 
 server.listen(process.env.port, "0.0.0.0", () => {

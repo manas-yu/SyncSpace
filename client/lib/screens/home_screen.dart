@@ -33,6 +33,21 @@ class HomeScreen extends ConsumerWidget {
     Routemaster.of(context).push('/document/$documentId');
   }
 
+  void deleteDocument(
+      WidgetRef ref, String documentId, BuildContext context) async {
+    final token = ref.watch(userProvider)!.token;
+    final sMessenger = ScaffoldMessenger.of(context);
+    final errorModel = await ref
+        .read(documentRepositoryProvider)
+        .deleteDocument(token, documentId);
+    if (errorModel.errorMessage != null) {
+      sMessenger
+          .showSnackBar(SnackBar(content: Text(errorModel.errorMessage!)));
+      return;
+    }
+    ref.refresh(documentRepositoryProvider).getDocuments(token);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -71,26 +86,48 @@ class HomeScreen extends ConsumerWidget {
                 return const Loader();
               }
               return Center(
-                child: SizedBox(
-                  width: 600,
-                  child: ListView.builder(
-                      itemCount: snapshot.data!.data.length,
-                      itemBuilder: (context, index) {
-                        DocumentModel document = snapshot.data!.data[index];
-                        return InkWell(
-                          onTap: () => navigateToDocument(context, document.id),
-                          child: SizedBox(
-                            height: 50,
-                            child: Card(
-                              child: Center(
-                                child: Text(document.title,
-                                    style: const TextStyle(fontSize: 20)),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                ),
+                child: snapshot.data!.data.length == 0
+                    ? const Text(
+                        'No Documents To Show!',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 35),
+                      )
+                    : SizedBox(
+                        width: 600,
+                        child: ListView.builder(
+                            itemCount: snapshot.data!.data.length,
+                            itemBuilder: (context, index) {
+                              DocumentModel document =
+                                  snapshot.data!.data[index];
+                              return InkWell(
+                                onTap: () =>
+                                    navigateToDocument(context, document.id),
+                                child: SizedBox(
+                                  height: 80,
+                                  child: Card(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(document.title,
+                                              style: const TextStyle(
+                                                  fontSize: 20)),
+                                          IconButton(
+                                              onPressed: () {
+                                                deleteDocument(
+                                                    ref, document.id, context);
+                                              },
+                                              icon: const Icon(Icons.delete))
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                      ),
               );
             }),
       ),
