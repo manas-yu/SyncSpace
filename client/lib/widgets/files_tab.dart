@@ -4,6 +4,19 @@ import 'package:dodoc/models/file_model.dart';
 import 'package:flutter/material.dart';
 
 class FilesTab extends StatelessWidget {
+  final List<FileModel> files;
+  final ValueChanged<FileModel> onOpenedFile;
+  final ValueChanged<FileModel>? onDeleteFile;
+  final ValueChanged<FileModel> onDownloadFile;
+
+  const FilesTab({
+    super.key,
+    required this.files,
+    required this.onOpenedFile,
+    this.onDeleteFile,
+    required this.onDownloadFile,
+  });
+
   Color getColor(String extension) {
     switch (extension) {
       case 'pdf':
@@ -24,18 +37,6 @@ class FilesTab extends StatelessWidget {
         return Colors.red; // Default color for unknown extensions
     }
   }
-
-  final List<FileModel> files;
-  final ValueChanged<FileModel> onOpenedFile;
-  final ValueChanged<FileModel>? onDeleteFile;
-  final ValueChanged<FileModel> onDownloadFile;
-  const FilesTab({
-    super.key,
-    required this.files,
-    required this.onOpenedFile,
-    this.onDeleteFile,
-    required this.onDownloadFile,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,9 @@
 import 'package:dodoc/colors.dart';
 import 'package:dodoc/common/widgets/loader.dart';
-import 'package:dodoc/models/document_model.dart';
 import 'package:dodoc/models/error_model.dart';
 import 'package:dodoc/repository/auth_repository.dart';
 import 'package:dodoc/repository/document_repository.dart';
+import 'package:dodoc/widgets/document_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:routemaster/routemaster.dart';
@@ -52,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Screen'),
+        title: const Text('My WorkSpaces'),
         actions: [
           IconButton(
             onPressed: () => createDocument(ref, context),
@@ -86,49 +86,16 @@ class HomeScreen extends ConsumerWidget {
                 return const Loader();
               }
               return Center(
-                child: snapshot.data!.data.length == 0
-                    ? const Text(
-                        'No Documents To Show!',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 35),
-                      )
-                    : SizedBox(
-                        width: 600,
-                        child: ListView.builder(
-                            itemCount: snapshot.data!.data.length,
-                            itemBuilder: (context, index) {
-                              DocumentModel document =
-                                  snapshot.data!.data[index];
-                              return InkWell(
-                                onTap: () =>
-                                    navigateToDocument(context, document.id),
-                                child: SizedBox(
-                                  height: 80,
-                                  child: Card(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(document.title,
-                                              style: const TextStyle(
-                                                  fontSize: 20)),
-                                          IconButton(
-                                              onPressed: () {
-                                                deleteDocument(
-                                                    ref, document.id, context);
-                                              },
-                                              icon: const Icon(Icons.delete))
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                      ),
-              );
+                  child: snapshot.data!.data.length == 0
+                      ? const Text(
+                          'No Documents To Show!',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 35),
+                        )
+                      : DocumentGrid(
+                          navigateToDocument: navigateToDocument,
+                          documents: snapshot.data!.data,
+                          onDeleteFile: deleteDocument));
             }),
       ),
     );
