@@ -36,6 +36,13 @@ class _ChatMessagesState extends ConsumerState<ChatMessages> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    socketRepository.disposeReceiveMessageListener();
+  }
+
+  @override
   void initState() {
     super.initState();
     fetchChats();

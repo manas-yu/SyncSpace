@@ -40,7 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.call))
+                IconButton(onPressed: () {}, icon: const Icon(Icons.video_call))
               ],
             ),
           ),

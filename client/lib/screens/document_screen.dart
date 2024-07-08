@@ -34,6 +34,12 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   quill.QuillController? _controller;
   ErrorModel? errorModel;
   SocketRepository socketRepository = SocketRepository();
+  @override
+  void dispose() {
+    super.dispose();
+    titleController.dispose();
+    socketRepository.disposeChangeListener();
+  }
 
   @override
   void initState() {
@@ -86,12 +92,6 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
         socketRepository.typing(map);
       }
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    titleController.dispose();
   }
 
   void updateTitle(WidgetRef ref, String title) {

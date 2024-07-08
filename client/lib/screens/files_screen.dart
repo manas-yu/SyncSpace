@@ -49,6 +49,13 @@ class _FileScreenState extends ConsumerState<FileScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    socketRepository.disposeReceiveFileListener();
+    socketRepository.disposeFileDeletedListener();
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
