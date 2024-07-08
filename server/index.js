@@ -52,6 +52,7 @@ io.on("connection", (socket) => {
     console.log(data);
     io.to(data.room).emit('file-deleted', data);
   })
+  //sfu architecture for video call webrtc
 
 });
 

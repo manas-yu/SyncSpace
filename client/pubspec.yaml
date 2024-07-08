@@ -36,6 +36,7 @@ dependencies:
   flutter_dropzone: ^4.0.1
   flutter_quill: ^9.4.6
   flutter_riverpod: ^2.5.1
+  flutter_webrtc: ^0.11.1
   google_sign_in: ^6.2.1
   http: ^1.2.1
   http_parser: ^4.0.0
