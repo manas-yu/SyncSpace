@@ -32,7 +32,13 @@ documentRouter.get(
     auth,
     async (req, res) => {
         try {
-            const documents = await Document.find({ uid: req.user });
+            // Query for documents where the uid is req.user or req.user is in the sharedWith array
+            const documents = await Document.find({
+                $or: [
+                    { uid: req.user },
+                    { sharedWith: req.user }
+                ]
+            });
             res.json(documents);
         } catch (e) {
             res.status(500).json({ error: e.message });
@@ -57,13 +63,47 @@ documentRouter.get(
     auth,
     async (req, res) => {
         try {
-            const documents = await Document.findById(req.params.id);
-            res.json(documents);
+            let document = await Document.findById(req.params.id);
+            if (!document) {
+                return res.status(404).json({ error: "Document not found" });
+            }
+            // Check if the uid of the document is equal to req.user
+            if (document.uid !== req.user) {
+                // Check if req.user is already in the sharedWith array
+                if (!document.sharedWith.includes(req.user)) {
+                    // Add req.user to the sharedWith array
+                    document.sharedWith.push(req.user);
+                    // Save the updated document
+                    document = await document.save();
+                }
+            }
+            res.json(document);
         } catch (e) {
             res.status(500).json({ error: e.message });
         }
     }
 );
+documentRouter.delete('/doc/unshare/:id', auth, async (req, res) => {
+    try {
+        let document = await Document.findById(req.params.id);
+        if (!document) {
+            return res.status(404).json({ error: "Document not found" });
+        }
+        // Check if req.user is in the sharedWith array
+        if (document.sharedWith.includes(req.user)) {
+            // Remove req.user from the sharedWith array
+            document.sharedWith = document.sharedWith.filter(user => user !== req.user);
+            // Save the updated document
+            await document.save();
+            res.json({ message: "User removed from sharedWith array", document });
+        } else {
+            // req.user not found in sharedWith array
+            res.status(400).json({ message: "User not found in sharedWith array" });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 documentRouter.delete('/doc/:id', auth, async (req, res) => {
     const roomId = req.params.id;
     try {

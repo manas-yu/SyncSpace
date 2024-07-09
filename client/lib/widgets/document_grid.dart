@@ -7,10 +7,12 @@ import 'package:intl/intl.dart';
 
 class DocumentGrid extends ConsumerWidget {
   final List<DocumentModel> documents;
-  final Function onDeleteFile;
+  final Function? onDeleteFile;
+  final Function? onRemoveDocument;
   final Function navigateToDocument;
   const DocumentGrid(
       {super.key,
+      required this.onRemoveDocument,
       required this.navigateToDocument,
       required this.documents,
       required this.onDeleteFile});
@@ -24,7 +26,11 @@ class DocumentGrid extends ConsumerWidget {
         break;
       case 1:
         // Implement your delete logic here
-        onDeleteFile(ref, doc.id, context);
+        if (onDeleteFile != null) {
+          onDeleteFile!(ref, doc.id, context);
+        } else {
+          onRemoveDocument!(doc.id, ref);
+        }
         break;
     }
   }
@@ -41,7 +47,7 @@ class DocumentGrid extends ConsumerWidget {
             mainAxisSpacing: 8, crossAxisSpacing: 8, crossAxisCount: 3),
         itemBuilder: (context, index) {
           final file = documents[index];
-          return buildFile(file, context, ref);
+          return buildFile(file, context, ref, onDeleteFile == null);
         });
   }
 
@@ -58,6 +64,7 @@ class DocumentGrid extends ConsumerWidget {
     DocumentModel doc,
     BuildContext context,
     WidgetRef ref,
+    bool isShared,
   ) {
     return InkWell(
       onTap: () {
@@ -120,12 +127,12 @@ class DocumentGrid extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const PopupMenuItem<int>(
+                    PopupMenuItem<int>(
                       value: 1,
                       child: Row(
                         children: [
-                          Icon(Icons.delete),
-                          Text('Delete'),
+                          Icon(isShared ? Icons.close : Icons.delete),
+                          Text(isShared ? 'Remove' : 'Delete'),
                         ],
                       ),
                     ),

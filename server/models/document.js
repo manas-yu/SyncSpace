@@ -18,6 +18,10 @@ const documentSchema = new mongoose.Schema(
         createdAt: {
             type: Number,
             required: true
+        },
+        sharedWith: {
+            type: Array,
+            default: []
         }
     }
 )
