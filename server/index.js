@@ -53,7 +53,21 @@ io.on("connection", (socket) => {
     io.to(data.room).emit('file-deleted', data);
   })
   //sfu architecture for video call webrtc
+  socket.on('user:call', (data) => {
+    console.log("user:call", data);
+    socket.broadcast.to(data.room).emit('incoming:call', data);
+  });
+  socket.on("call:accepted", (data) => {
+    console.log("call:accepted", data);
+    socket.broadcast.to(data.room).emit("call:accepted", data);
+  });
+  socket.on("peer:nego:needed", (data) => {
+    socket.broadcast.to(data.room).emit("peer:nego:needed", data);
+  });
 
+  socket.on("peer:nego:done", (data) => {
+    socket.broadcast.to(data.room).emit("peer:nego:final", data);
+  });
 });
 
 const saveData = async (data) => {

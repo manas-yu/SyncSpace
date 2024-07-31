@@ -68,4 +68,44 @@ class SocketRepository {
   void disposeFileDeletedListener() {
     _socketClient.off('file-deleted');
   }
+
+  void call(Map<String, dynamic> data) {
+    _socketClient.emit('user:call', data);
+  }
+
+  void incomingCall(Function(Map<String, dynamic>) func) {
+    _socketClient.on('incoming:call', (data) {
+      func(data);
+    });
+  }
+
+  void sendAnswer(Map<String, dynamic> data) {
+    _socketClient.emit('call:accepted', data);
+  }
+
+  void callAccepted(Function(Map<String, dynamic>) func) {
+    _socketClient.on('call:accepted', (data) {
+      func(data);
+    });
+  }
+
+  void makeNego(Map<String, dynamic> data) {
+    _socketClient.emit('peer:nego:needed', data);
+  }
+
+  void acceptNeg(Function(Map<String, dynamic>) func) {
+    _socketClient.on('peer:nego:needed', (data) {
+      func(data);
+    });
+  }
+
+  void negoDone(Map<String, dynamic> data) {
+    _socketClient.emit('peer:nego:done', data);
+  }
+
+  void finalNego(Function(Map<String, dynamic>) func) {
+    _socketClient.on('peer:nego:final', (data) {
+      func(data);
+    });
+  }
 }

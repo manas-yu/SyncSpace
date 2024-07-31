@@ -6,7 +6,12 @@ import 'package:flutter/material.dart';
 class ChatScreen extends StatefulWidget {
   final String id;
   final Function closeChat;
-  const ChatScreen({super.key, required this.id, required this.closeChat});
+  final Function onVideoCall;
+  const ChatScreen(
+      {super.key,
+      required this.id,
+      required this.closeChat,
+      required this.onVideoCall});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -40,7 +45,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                 ),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.video_call))
+                IconButton(
+                    onPressed: () {
+                      widget.onVideoCall();
+                    },
+                    icon: const Icon(Icons.video_call))
               ],
             ),
           ),

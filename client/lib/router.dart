@@ -2,6 +2,7 @@ import 'package:dodoc/screens/document_screen.dart';
 import 'package:dodoc/screens/files_screen.dart';
 import 'package:dodoc/screens/home_screen.dart';
 import 'package:dodoc/screens/login_screen.dart';
+import 'package:dodoc/screens/video_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:routemaster/routemaster.dart';
 
@@ -24,6 +25,10 @@ final loggedInRoutes = RouteMap(
     '/document/:id/files': (route) {
       final roomId = route.pathParameters['id'] ?? ' ';
       return MaterialPage(child: FileScreen(roomId: roomId));
+    },
+    '/document/:id/video-screen': (route) {
+      final roomId = route.pathParameters['id'] ?? ' ';
+      return MaterialPage(child: VideoScreen(roomId: roomId));
     },
   },
 );

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dodoc/clients/signaling.dart';
 import 'package:dodoc/colors.dart';
 import 'package:dodoc/common/widgets/loader.dart';
 import 'package:dodoc/models/document_model.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:routemaster/routemaster.dart';
 
 class DocumentScreen extends ConsumerStatefulWidget {
@@ -34,11 +36,37 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   quill.QuillController? _controller;
   ErrorModel? errorModel;
   SocketRepository socketRepository = SocketRepository();
+  String? remoteSocketId;
+  final peerService = PeerService();
   @override
   void dispose() {
     super.dispose();
     titleController.dispose();
     socketRepository.disposeChangeListener();
+  }
+
+  void setSocketListeners() {
+    socketRepository.incomingCall((data) async {
+      // Check if 'data' has a key 'offer' and 'offer' is not null
+      final rMaster = Routemaster.of(context);
+      try {
+        rMaster.push('video-screen');
+        // Safely cast 'offer' to String, if possible
+        final offerMap = data['offer'];
+        final RTCSessionDescription offer =
+            RTCSessionDescription(offerMap['sdp'], offerMap['type']);
+        final RTCSessionDescription ans = await peerService.getAnswer(offer);
+        socketRepository.sendAnswer(<String, dynamic>{
+          'room': widget.id,
+          'answer': {
+            'sdp': ans.sdp,
+            'type': ans.type,
+          },
+        });
+      } catch (e) {
+        print(e);
+      }
+    });
   }
 
   @override
@@ -47,7 +75,7 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
     socketRepository.joinRoom(widget.id);
     print('Joining room ${widget.id} ');
     fetchDocumentData();
-
+    setSocketListeners();
     socketRepository.changeListener((data) {
       _controller?.compose(
         Delta.fromJson(data['delta']),
@@ -260,6 +288,18 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
                 width: screenWidth * 0.5,
                 height: screenHeight * 0.8,
                 child: ChatScreen(
+                    onVideoCall: () async {
+                      final rMaster = Routemaster.of(context);
+                      final offer = await peerService.getOffer();
+                      socketRepository.call(<String, dynamic>{
+                        'room': widget.id,
+                        'offer': {
+                          'sdp': offer.sdp,
+                          'type': offer.type,
+                        },
+                      });
+                      rMaster.push('video-screen');
+                    },
                     id: widget.id,
                     closeChat: () {
                       setState(() {
