@@ -31,7 +31,7 @@ https://github.com/user-attachments/assets/e878c121-afe0-4fa1-8402-67a59dc10d2f
   Share files instantly with other participants in a session.
 
 - 🎥 **Video Conferencing**  
-  Seamless group video calls powered by WebRTC using SFU (Selective Forwarding Unit) architecture.
+  Seamless video calls powered by WebRTC using SFU (Selective Forwarding Unit) architecture.
 
 - 🔄 **Live Synchronization**  
   Utilizes Socket.IO to synchronize data instantly between clients.
