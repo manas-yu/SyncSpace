@@ -25,22 +25,31 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(150, 50),
-              backgroundColor: Colors.white,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Welcome To SyncSpace!!",
+              style: TextStyle(fontSize: 25),
             ),
-            onPressed: () {
-              signInWithGoogle(ref, context);
-            },
-            icon: Image.asset(
-              'assets/images/g-logo-2.png',
-              height: 20,
-            ),
-            label: const Text(
-              'Sign in with Google',
-              style: TextStyle(color: kBlackColor),
-            )),
+            ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(150, 50),
+                  backgroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  signInWithGoogle(ref, context);
+                },
+                icon: Image.asset(
+                  'assets/images/g-logo-2.png',
+                  height: 20,
+                ),
+                label: const Text(
+                  'Sign in with Google',
+                  style: TextStyle(color: kBlackColor),
+                )),
+          ],
+        ),
       ),
     );
   }
