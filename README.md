@@ -2,7 +2,21 @@
 
 **SyncSpace** is a real-time collaborative platform enabling document editing, file sharing, and video conferencing. Built using Flutter (frontend), Node.js (backend), MongoDB (database), and WebRTC with SFU architecture for scalable video calling. It leverages Socket.IO for real-time communication and JWT-based authentication for secure access.
 
+https://github.com/user-attachments/assets/02758c6a-53f4-4d83-8f71-03322d86c196
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/6cc401fa-6fa6-4786-9d4f-d92b9b863276" width="400"/></td>
+    <td><img src="https://github.com/user-attachments/assets/094fa6fd-f643-4013-a2ca-69aed6646ef3" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/df0fa34a-fc41-4fb7-9c89-3fd3f0444743" width="400"/></td>
+    <td><img src="https://github.com/user-attachments/assets/75ae4deb-5ac9-492e-86c6-42a87e7ac49c" width="400"/></td>
+  </tr>
+</table>
+
 ---
+
 
 ## 🚀 Features
 
