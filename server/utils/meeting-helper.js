@@ -1,9 +1,8 @@
-const { type } = require("server/reply");
 const meetingServices = require("../services/meeting.service");
 const { MeetingPayloadEnum } = require("../utils/meeting-payload.enum");
 
 async function joinMeeting(meetingId, socket, payload, meetingServer) {
-    const { userId, name } = payload;
+    const { userId, name } = payload.data;
     meetingServices.isMeetingPresent(meetingId, async (error, results) => {
         if (error && !results) {
             sendMessage(socket, {

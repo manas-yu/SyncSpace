@@ -8,7 +8,7 @@ const meetingUser = mongoose.model(
         },
         meetingId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: "Meeting"
+            ref: "Meeting"
         },
         userId: {
             type: String,

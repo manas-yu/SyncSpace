@@ -22,8 +22,11 @@ function handleMessage(meetingId, socket, meetingServer, message) {
         payload = message;
     }
     switch (payload.type) {
-        case MeetingPayloadEnum.JOINED_MEETING:
+        case MeetingPayloadEnum.JOIN_MEETING:
             meetingHelper.joinMeeting(meetingId, socket, payload, meetingServer);
+            break;
+        case MeetingPayloadEnum.ICECANDIDATE:
+            meetingHelper.forwardIceCandidate(meetingId, meetingServer, socket, payload);
             break;
         case MeetingPayloadEnum.CONNECTION_REQUEST:
             meetingHelper.forwardConnectionRequest(meetingId, meetingServer, socket, payload);
