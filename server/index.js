@@ -7,8 +7,10 @@ const authRouter = require("./routes/auth");
 const documentRouter = require("./routes/document");
 const fileRouter = require("./routes/file");
 const chatRouter = require("./routes/chat");
+const meetingRouter = require("./routes/meeting.route");
 const Document = require("./models/document");
 const app = express();
+const { listenMessage } = require('./meeting-server');
 var server = http.createServer(app);
 var io = require("socket.io")(server);
 
@@ -18,6 +20,7 @@ app.use(authRouter);
 app.use(documentRouter);
 app.use(fileRouter);
 app.use(chatRouter);
+app.use(meetingRouter);
 mongoose
   .connect(process.env.DB)
   .then(() => {
@@ -29,6 +32,7 @@ mongoose
 
 io.on("connection", (socket) => {
   console.log("A user has connected");
+  listenMessage(socket, io);
   socket.on("join", (documentId) => {
     console.log("A user has joined the document");
     socket.join(documentId);
