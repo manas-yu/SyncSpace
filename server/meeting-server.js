@@ -10,7 +10,7 @@ function parseMessage(message) {
 }
 
 function listenMessage(socket, meetingServer) {
-    meetingId = socket.handshake.query.id;
+    const meetingId = socket.handshake.query.id;
     socket.on("message", (message) => handleMessage(meetingId, socket, meetingServer, message));
 }
 
